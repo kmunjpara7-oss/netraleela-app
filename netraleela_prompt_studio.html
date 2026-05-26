@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Netraleela Prompt Studio</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Jost:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--cr:#7D1C1C;--go:#B8862A;--go-dim:rgba(184,134,42,0.08);--br:rgba(184,134,42,0.18);--iv:#FAF6EE;--dk:#1C0A0A;--tx:#2A1414;--ts:#7A7A7A;--bg:#fff;--bg2:#F9F7F3}
+html,body{width:100%;height:100%;background:var(--bg2)}
+body{font-family:'Jost',sans-serif;color:var(--tx);line-height:1.6}
+.container{display:flex;height:100vh;flex-direction:column}
+.header{background:var(--dk);color:var(--iv);padding:16px 20px;border-bottom:2px solid var(--go);display:flex;align-items:center;justify-content:space-between}
+.brand{font-family:'Cinzel',serif;font-size:16px;letter-spacing:4px;display:flex;align-items:center;gap:8px}
+.brand span{color:var(--go)}
+.api-status{display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:2px;text-transform:uppercase}
+.api-dot{width:8px;height:8px;border-radius:50%;background:#ddd}
+.api-dot.ok{background:#2C6B2F}
+.tabs{display:flex;border-bottom:1px solid var(--br);background:var(--bg)}
+.tab-btn{flex:1;padding:14px;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;background:transparent;border:none;cursor:pointer;color:var(--ts);border-bottom:3px solid transparent;transition:all .2s}
+.tab-btn.active{color:var(--cr);border-bottom-color:var(--cr)}
+.content{flex:1;overflow-y:auto;background:var(--bg2)}
+.tab-panel{display:none;padding:20px}
+.tab-panel.active{display:block}
+.section{background:var(--bg);border:1px solid var(--br);margin-bottom:16px}
+.sec-hdr{padding:14px 16px;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;background:var(--go-dim);border-bottom:1px solid var(--br)}
+.sec-hdr:hover{background:rgba(184,134,42,0.12)}
+.sec-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:2px;color:var(--cr)}
+.sec-count{font-size:11px;color:var(--ts);margin-left:8px}
+.sec-body{padding:16px;display:none}
+.sec-body.open{display:block}
+.api-row{display:flex;gap:10px}
+.api-input{flex:1;border:1px solid var(--br);padding:10px 12px;font-family:'Jost',sans-serif;font-size:13px;background:var(--bg);color:var(--tx)}
+.api-input:focus{outline:none;border-color:var(--go)}
+.btn{padding:10px 16px;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:var(--cr);color:var(--iv);border:none;cursor:pointer;transition:opacity .15s}
+.btn:hover{opacity:.9}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.img-grid{display:grid;gap:10px;margin-bottom:14px}.img-grid#bgGrid{grid-template-columns:repeat(5,1fr)}.img-grid#modelGrid{grid-template-columns:repeat(4,1fr)}
+.img-slot{border:1px solid var(--br);position:relative;background:var(--bg2);max-width:120px}
+.img-slot:hover .img-del{display:flex}
+.img-thumb{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.img-name{padding:6px;font-size:10px;text-align:center;border-top:1px solid var(--br);word-break:break-word;min-height:26px;display:flex;align-items:center;justify-content:center}
+.img-del{position:absolute;top:4px;right:4px;background:rgba(125,28,28,.8);color:#fff;border:none;width:20px;height:20px;font-size:10px;cursor:pointer;display:none;align-items:center;justify-content:center}
+.upload-btn{width:100%;padding:20px;border:2px dashed var(--br);background:var(--go-dim);cursor:pointer;text-align:center;transition:all .2s}
+.upload-btn:hover{border-color:var(--go);background:rgba(184,134,42,0.12)}
+.cut-list{display:flex;flex-direction:column;gap:8px}
+.cut-item{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--br);background:var(--bg2)}
+.cut-num{font-family:'Cinzel',serif;font-size:11px;color:var(--go);width:24px;flex-shrink:0}
+.cut-input{flex:1;border:none;background:transparent;font-family:'Jost',sans-serif;font-size:13px;color:var(--tx);outline:none;border-bottom:1px solid transparent;padding:2px}
+.cut-input:focus{border-bottom-color:var(--go)}
+.prompt-slot{border-bottom:1px solid var(--br)}
+.prompt-hdr{padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;background:var(--go-dim);border-bottom:1px solid var(--br)}
+.prompt-hdr:hover{background:rgba(184,134,42,0.12)}
+.prompt-num{font-family:'Cinzel',serif;font-size:10px;color:#fff;background:var(--cr);padding:3px 8px;flex-shrink:0}
+.prompt-type{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 6px;border:1px solid;flex-shrink:0}
+.prompt-type.model{border-color:var(--go);color:var(--go)}
+.prompt-type.hero{border-color:var(--cr);color:var(--cr)}
+.prompt-name{flex:1;border:none;background:transparent;font-family:'Jost',sans-serif;font-size:12px;color:var(--tx);outline:none}
+.prompt-body{padding:0 16px 14px;display:none;background:var(--bg)}
+.prompt-body.open{display:block}
+.prompt-textarea{width:100%;min-height:120px;border:1px solid var(--br);padding:10px;font-family:'Jost',sans-serif;font-size:12px;color:var(--ts);resize:vertical;background:var(--bg2)}
+.prompt-textarea:focus{outline:none;border-color:var(--go)}
+.gen-wrap{display:grid;grid-template-columns:380px 1fr;gap:20px;height:100%}
+.gen-left{padding:20px;border-right:1px solid var(--br);background:var(--bg);overflow-y:auto}
+.gen-right{padding:20px;background:var(--bg2);overflow-y:auto}
+.upload-zone{border:2px dashed var(--br);padding:30px 20px;text-align:center;cursor:pointer;margin-bottom:16px;background:var(--go-dim);transition:all .2s}
+.upload-zone:hover{border-color:var(--go)}
+.upload-icon{font-size:32px;color:var(--go);opacity:.6;margin-bottom:10px}
+.upload-text{font-family:'Cinzel',serif;font-size:12px;letter-spacing:1px;color:var(--cr);margin-bottom:4px}
+.upload-sub{font-size:11px;color:var(--ts)}
+.field-group{margin-bottom:14px}
+.field-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--go);margin-bottom:5px;display:block}
+.field-input{width:100%;border:1px solid var(--br);padding:9px 11px;font-family:'Jost',sans-serif;font-size:12px;background:var(--bg);color:var(--tx)}
+.field-input:focus{outline:none;border-color:var(--go)}
+.field-textarea{width:100%;min-height:60px;border:1px solid var(--br);padding:9px 11px;font-family:'Jost',sans-serif;font-size:12px;background:var(--bg);color:var(--ts);resize:none}
+.field-textarea:focus{outline:none;border-color:var(--go)}
+.occasion-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.occ-tag{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:5px 10px;border:1px solid var(--br);cursor:pointer;background:var(--bg2);color:var(--ts);user-select:none;transition:all .15s}
+.occ-tag:hover{border-color:var(--go)}
+.occ-tag.selected{background:var(--cr);border-color:var(--cr);color:var(--iv)}
+.gen-btn{width:100%;padding:14px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;background:var(--cr);color:var(--iv);border:none;cursor:pointer;text-transform:uppercase;transition:opacity .15s}
+.gen-btn:hover:not(:disabled){opacity:.9}
+.gen-btn:disabled{opacity:.5;cursor:not-allowed}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;text-align:center;color:var(--ts)}
+.empty-icon{font-size:36px;color:var(--go);opacity:.3;margin-bottom:12px}
+.empty-title{font-family:'Cinzel',serif;font-size:13px;letter-spacing:1px;color:var(--cr);margin-bottom:6px}
+.empty-text{font-size:12px;color:var(--ts)}
+.output-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--br)}
+.output-title{font-family:'Cinzel',serif;font-size:12px;letter-spacing:2px;color:var(--cr)}
+.output-actions{display:flex;gap:8px}
+.btn-small{font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:6px 12px;border:1px solid;cursor:pointer;font-family:'Jost',sans-serif;background:transparent;display:flex;align-items:center;gap:5px}
+.btn-copy-all{border-color:var(--go);color:var(--go)}
+.btn-copy-all:hover{background:var(--go-dim)}
+.btn-clear{border-color:var(--ts);color:var(--ts)}
+.btn-clear:hover{background:rgba(122,122,122,.1)}
+.prompt-card{background:var(--bg);border:1px solid var(--br);padding:14px;margin-bottom:10px}
+.card-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.card-num{font-family:'Cinzel',serif;font-size:10px;color:#fff;background:var(--cr);padding:3px 8px}
+.card-name{font-family:'Cinzel',serif;font-size:11px;color:var(--cr);letter-spacing:.5px}
+.card-txt{font-size:11px;color:var(--ts);line-height:1.6;max-height:72px;overflow:hidden;margin-bottom:10px;border-left:2px solid var(--br);padding-left:10px}
+.card-footer{display:flex;justify-content:flex-end}
+.btn-copy{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 11px;border:1px solid var(--br);cursor:pointer;background:transparent;color:var(--ts);font-family:'Jost',sans-serif;display:flex;align-items:center;gap:4px}
+.btn-copy:hover{border-color:var(--go);color:var(--go)}
+.spinner{display:inline-block;width:11px;height:11px;border:2px solid rgba(250,246,238,.3);border-top-color:var(--iv);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.msg{position:fixed;bottom:20px;right:20px;padding:12px 16px;background:var(--cr);color:var(--iv);font-size:12px;border-radius:4px;z-index:1000;max-width:280px;word-wrap:break-word}
+.msg.err{background:#B8272A}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="brand">NETRALEELA <span>✦</span> PROMPT STUDIO</div>
+    <div class="api-status">
+      <div class="api-dot" id="apiDot"></div>
+      <span id="apiText">Not Connected</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('setup')">Studio Setup</button>
+    <button class="tab-btn" onclick="switchTab('generate')">Generate Prompts</button>
+  </div>
+
+  <div class="content">
+    <!-- SETUP TAB -->
+    <div id="tab-setup" class="tab-panel active">
+      <div class="section">
+        <div class="sec-hdr" onclick="toggleSec(this)">
+          <div><span class="sec-title">API Key</span><span class="sec-count" id="apiStatus">Not Saved</span></div>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="sec-body open">
+          <div class="api-row">
+            <input id="apiKeyInput" type="password" class="api-input" placeholder="sk-ant-api03-..." value="">
+            <button class="btn" onclick="saveApiKey()">Save Key</button>
+          </div>
+          <div style="font-size:11px;color:var(--ts);margin-top:8px">Your API key is stored locally in your browser only.</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sec-hdr" onclick="toggleSec(this)">
+          <div><span class="sec-title">Backgrounds</span><span class="sec-count" id="bgCount">0 uploaded</span></div>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="sec-body">
+          <div class="img-grid" id="bgGrid"></div>
+          <label class="upload-btn" style="margin-bottom:0">
+            <i class="fas fa-upload"></i> Add Background
+            <input type="file" accept="image/*" onchange="handleBgUpload(event)" style="display:none">
+          </label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sec-hdr" onclick="toggleSec(this)">
+          <div><span class="sec-title">Models</span><span class="sec-count" id="modelCount">0 uploaded</span></div>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="sec-body">
+          <div class="img-grid" id="modelGrid"></div>
+          <label class="upload-btn" style="margin-bottom:0">
+            <i class="fas fa-upload"></i> Add Model
+            <input type="file" accept="image/*" onchange="handleModelUpload(event)" style="display:none">
+          </label>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sec-hdr" onclick="toggleSec(this)">
+          <div><span class="sec-title">Blouse Cuts</span><span class="sec-count">5 defined</span></div>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="sec-body">
+          <div class="cut-list" id="cutList"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sec-hdr" onclick="toggleSec(this)">
+          <div><span class="sec-title">Prompt Templates</span><span class="sec-count">7 slots</span></div>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="sec-body" id="promptList"></div>
+      </div>
+    </div>
+
+    <!-- GENERATE TAB -->
+    <div id="tab-generate" class="tab-panel">
+      <div class="gen-wrap">
+        <div class="gen-left">
+          <div class="upload-zone" onclick="document.getElementById('sareeUpload').click()" id="uploadZone">
+            <div class="upload-icon"><i class="fas fa-image"></i></div>
+            <div class="upload-text">Upload Saree Image</div>
+            <div class="upload-sub">Click or drag & drop</div>
+          </div>
+          <input type="file" id="sareeUpload" accept="image/*" onchange="handleSareeUpload(event)" style="display:none">
+
+          <div class="field-group"><label class="field-label">Primary Color(s)</label><input type="text" class="field-input" id="primaryColor" placeholder="e.g. Soft metallic lavender"></div>
+          <div class="field-group"><label class="field-label">Secondary / Accent Colors</label><input type="text" class="field-input" id="secondaryColor" placeholder="e.g. Taupe, champagne"></div>
+          <div class="field-group"><label class="field-label">Fabric Type</label><select class="field-input" id="fabricType"><option value="">Select fabric type</option><option>Silk</option><option>Tissue</option><option>Cotton</option><option>Georgette</option><option>Chiffon</option><option>Net</option><option>Organza</option><option>Other</option></select></div>
+          <div class="field-group"><label class="field-label">Weave / Craft Style</label><select class="field-input" id="weaveStyle"><option value="">Select weave style</option><option>Banarasi</option><option>Kanjeevaram</option><option>Patola</option><option>Bandhani</option><option>Chanderi</option><option>Paithani</option><option>Ikkat</option><option>Phulkari</option><option>Digital Print</option><option>Other</option></select></div>
+          <div class="field-group"><label class="field-label">Region / Origin</label><input type="text" class="field-input" id="region" placeholder="e.g. Varanasi, UP"></div>
+          <div class="field-group"><label class="field-label">Occasion</label><div class="occasion-row" id="occasionRow"></div></div>
+          <div class="field-group"><label class="field-label">Additional Notes</label><textarea class="field-textarea" id="notes" placeholder="Any other details..."></textarea></div>
+          <button class="gen-btn" id="genBtn" onclick="generatePrompts()">Generate Prompts</button>
+        </div>
+
+        <div class="gen-right">
+          <div class="empty-state" id="emptyState">
+            <i class="fas fa-wand-magic-sparkles empty-icon"></i>
+            <div class="empty-title">No prompts generated yet</div>
+            <div class="empty-text">Upload a saree image and fill in the details</div>
+          </div>
+          <div id="outputArea" style="display:none">
+            <div class="output-hdr">
+              <div class="output-title">Generated Prompts</div>
+              <div class="output-actions">
+                <button class="btn-small btn-copy-all" onclick="copyAll()"><i class="fas fa-copy"></i> Copy All</button>
+                <button class="btn-small btn-clear" onclick="clearOutput()"><i class="fas fa-trash"></i> Clear</button>
+              </div>
+            </div>
+            <div id="promptCards"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BLOUSE_CUTS=['Round neck','Boat neck','Square neck','Sweetheart neck','Deep V-neck'];
+const OCCASIONS=['Wedding','Festive','Casual','Work','Evening'];
+const PROMPT_NAMES=[
+  {name:'Hero Movement Shot',type:'Model'},
+  {name:'Seated Catalog Shot',type:'Model'},
+  {name:'Detail / Close-up Shot',type:'Model'},
+  {name:'Three-Quarter Standing',type:'Model'},
+  {name:'Blouse Showcase',type:'Model'},
+  {name:'Pallu Flat Lay',type:'Hero'},
+  {name:'Border Flat Lay',type:'Hero'}
+];
+
+let appState={apiKey:'',backgrounds:[],models:[],prompts:['','','','','','',''],sareeImage:null,selectedOccasions:['Festive']};
+
+function init(){loadState();renderSetup();updateApiStatus();renderOccasions()}
+
+function loadState(){const saved=localStorage.getItem('netraLeelaState');if(saved){try{const p=JSON.parse(saved);appState.apiKey=p.apiKey||'';appState.prompts=p.prompts||['','','','','','',''];appState.selectedOccasions=p.selectedOccasions||['Festive'];}catch(e){}}appState.backgrounds=[];appState.models=[];appState.prompts=appState.prompts||['','','','','','',''];appState.selectedOccasions=appState.selectedOccasions||['Festive'];appState.sareeImage=null}
+
+function saveState(){const toSave={...appState,sareeImage:null,backgrounds:[],models:[]};localStorage.setItem('netraLeelaState',JSON.stringify(toSave))}
+
+function updateApiStatus(){const key=localStorage.getItem('netraLeelaApiKey');appState.apiKey=key||'';document.getElementById('apiKeyInput').value=appState.apiKey?'sk-ant-*****':'';const dot=document.getElementById('apiDot');const text=document.getElementById('apiText');if(appState.apiKey){dot.classList.add('ok');text.textContent='Connected';document.getElementById('apiStatus').textContent='✓ Saved'}else{dot.classList.remove('ok');text.textContent='Not Connected';document.getElementById('apiStatus').textContent='Not Saved'}}
+
+function saveApiKey(){const key=document.getElementById('apiKeyInput').value.trim();if(!key){alert('Please enter an API key');return}localStorage.setItem('netraLeelaApiKey',key);appState.apiKey=key;updateApiStatus();showMsg('API key saved')}
+
+function renderSetup(){renderBlouses();renderBgGrid();renderModelGrid();renderPrompts()}
+
+function renderBlouses(){const list=document.getElementById('cutList');list.innerHTML=BLOUSE_CUTS.map((c,i)=>`<div class="cut-item"><span class="cut-num">0${i+1}</span><input class="cut-input" value="${c}" readonly></div>`).join('')}
+
+function renderBgGrid(){const grid=document.getElementById('bgGrid');grid.innerHTML='';appState.backgrounds.forEach((bg,i)=>{const div=document.createElement('div');div.className='img-slot';div.innerHTML=`<img src="${bg.data}" class="img-thumb"><div class="img-name">${bg.name}</div><button class="img-del" onclick="removeBg(${i})"><i class="fas fa-trash"></i></button>`;grid.appendChild(div)});document.getElementById('bgCount').textContent=`${appState.backgrounds.length} uploaded`}
+
+function renderModelGrid(){const grid=document.getElementById('modelGrid');grid.innerHTML='';appState.models.forEach((m,i)=>{const div=document.createElement('div');div.className='img-slot';div.innerHTML=`<img src="${m.data}" class="img-thumb"><div class="img-name">${m.name}</div><button class="img-del" onclick="removeModel(${i})"><i class="fas fa-trash"></i></button>`;grid.appendChild(div)});document.getElementById('modelCount').textContent=`${appState.models.length} uploaded`}
+
+function handleBgUpload(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(evt){const name=prompt('Background name:',file.name.replace(/\.[^/.]+$/,''));if(!name)return;appState.backgrounds.push({name,data:evt.target.result});saveState();renderBgGrid();e.target.value=''};reader.readAsDataURL(file)}
+
+function removeBg(i){appState.backgrounds.splice(i,1);saveState();renderBgGrid()}
+
+function handleModelUpload(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(evt){const name=prompt('Model name:',file.name.replace(/\.[^/.]+$/,''));if(!name)return;appState.models.push({name,data:evt.target.result});saveState();renderModelGrid();e.target.value=''};reader.readAsDataURL(file)}
+
+function removeModel(i){appState.models.splice(i,1);saveState();renderModelGrid()}
+
+function renderPrompts(){const list=document.getElementById('promptList');list.innerHTML='';PROMPT_NAMES.forEach((p,i)=>{const div=document.createElement('div');div.className='prompt-slot';const typeClass=p.type==='Model'?'model':'hero';div.innerHTML=`<div class="prompt-hdr" onclick="togglePrompt(this)"><span class="prompt-num">0${i+1}</span><span class="prompt-type ${typeClass}">${p.type}</span><input class="prompt-name" value="${p.name}" readonly><i class="fas fa-chevron-down"></i></div><div class="prompt-body"><textarea class="prompt-textarea" onchange="savePromptText(${i},this.value)" placeholder="Paste your prompt template here...">${appState.prompts[i]||''}</textarea></div>`;list.appendChild(div)})}
+
+function savePromptText(i,text){appState.prompts[i]=text;saveState()}
+
+function toggleSec(el){const body=el.nextElementSibling;body.classList.toggle('open')}
+
+function togglePrompt(el){const body=el.nextElementSibling;body.classList.toggle('open')}
+
+function renderOccasions(){const row=document.getElementById('occasionRow');row.innerHTML=OCCASIONS.map(o=>`<span class="occ-tag ${appState.selectedOccasions.includes(o)?'selected':''}" onclick="toggleOccasion(this,'${o}')">${o}</span>`).join('')}
+
+function toggleOccasion(el,occ){el.classList.toggle('selected');if(el.classList.contains('selected')){if(!appState.selectedOccasions.includes(occ))appState.selectedOccasions.push(occ)}else{appState.selectedOccasions=appState.selectedOccasions.filter(x=>x!==occ)}saveState()}
+
+function handleSareeUpload(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(evt){appState.sareeImage=evt.target.result;document.getElementById('uploadZone').innerHTML=`<div style="display:flex;align-items:center;justify-content:center;gap:10px;height:80px"><img src="${evt.target.result}" style="max-height:70px;border:1px solid var(--br)"><div style="text-align:left"><div style="font-family:Cinzel,serif;font-size:11px;color:var(--cr)">saree_image.jpg</div><div style="font-size:10px;color:var(--ts);margin-top:3px">Ready • Click to replace</div></div></div>`};reader.readAsDataURL(file)}
+
+function switchTab(tab){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+tab).classList.add('active');event.target.classList.add('active')}
+
+async function generatePrompts(){if(!appState.apiKey){alert('Please save your API key first');return}
+if(!appState.sareeImage){alert('Please upload a saree image');return}
+if(!document.getElementById('primaryColor').value.trim()){alert('Please fill in Primary Color');return}
+if(!document.getElementById('fabricType').value){alert('Please select Fabric Type');return}
+if(!document.getElementById('weaveStyle').value){alert('Please select Weave Style');return}
+
+const btn=document.getElementById('genBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Generating...';
+
+try{
+const systemPrompt=buildSystemPrompt();
+const {cachedContent,sareeContent,imageSource}=buildCachedUserPrompt();
+
+const response=await fetch('/api/generate',{
+method:'POST',
+headers:{'content-type':'application/json'},
+body:JSON.stringify({
+apiKey:appState.apiKey,
+systemPrompt:[{type:'text',text:systemPrompt,cache_control:{type:'ephemeral'}}],
+messages:[{role:'user',content:[{type:'text',text:cachedContent,cache_control:{type:'ephemeral'}},{type:'text',text:sareeContent},{type:'image',source:imageSource}]}]
+})
+});
+
+if(!response.ok){const err=await response.json();throw new Error(err.error?.message||'API Error')}
+
+const data=await response.json();
+const result=data.content[0].text;
+displayOutput(result);
+document.getElementById('emptyState').style.display='none';
+document.getElementById('outputArea').style.display='block';
+}catch(err){showMsg('Error: '+err.message,'err')}finally{btn.disabled=false;btn.textContent='Generate Prompts'}}
+
+function buildSystemPrompt(){return`You are a prompt engineering specialist for luxury saree product photography. Generate 7 customized image generation prompts based on uploaded saree details and reference images. For each prompt, replace variables marked in brackets with saree-specific details. Return 7 complete prompts, numbered and named.`}
+
+function buildCachedUserPrompt(){const cachedContent=`Blouse Cuts: Round neck, Boat neck, Square neck, Sweetheart neck, Deep V-neck\nModels: @modela, @modelb, @modelc, @modeld\nBackgrounds: @bg1_taupe, @bg2_sandstone_arch, @bg3_ivory_atelier, @bg4_olive_clay, @bg5_painterly_heritage\nPrompt Templates:\n${appState.prompts.map((p,i)=>`[PROMPT ${i+1}]\n${p}`).join('\n')}`;
+const sareeContent=`Saree Details:\nPrimary Color: ${document.getElementById('primaryColor').value}\nSecondary Colors: ${document.getElementById('secondaryColor').value}\nFabric Type: ${document.getElementById('fabricType').value}\nWeave Style: ${document.getElementById('weaveStyle').value}\nRegion: ${document.getElementById('region').value}\nOccasions: ${appState.selectedOccasions.join(', ')}\nNotes: ${document.getElementById('notes').value}\nPlease generate all 7 customized prompts with model, background, and saree-specific details filled in.`;
+const imageSource={type:'base64',media_type:'image/jpeg',data:appState.sareeImage.split(',')[1]};
+return {cachedContent,sareeContent,imageSource}}
+
+function displayOutput(result){const cards=document.getElementById('promptCards');const prompts=parsePrompts(result);cards.innerHTML=prompts.map((p,i)=>`<div class="prompt-card"><div class="card-hdr"><span class="card-num">0${i+1}</span><span class="card-name">${p.name}</span></div><div class="card-txt">${p.text.substring(0,200)}...</div><div class="card-footer"><button class="btn-copy" onclick="copyPrompt(this,'${p.text.replace(/'/g,"\\'").replace(/\n/g,' ')}'"><i class="fas fa-copy"></i>Copy</button></div></div>`).join('')}
+
+function parsePrompts(result){const lines=result.split('\n');const prompts=[];let current=null;for(let line of lines){if(line.match(/PROMPT\s+\d+|—.*SHOT/i)){if(current)prompts.push(current);const match=line.match(/PROMPT\s+(\d+)\s*—?\s*(.+)/i)||line.match(/\d+.*?—\s*(.+)/i);current={name:(match?match[match.length-1]:'Generated').trim(),text:'',model:''}}else if(current){if(line.includes('@model')){const m=line.match(/@model[a-z]/);if(m)current.model=m[0]}current.text+=line+'\n'}}if(current)prompts.push(current);return prompts.length>0?prompts:[{name:'Generated Prompt',text:result,model:''}]}
+
+function copyPrompt(btn,text){navigator.clipboard.writeText(text).then(()=>{btn.innerHTML='<i class="fas fa-check"></i>Copied';setTimeout(()=>{btn.innerHTML='<i class="fas fa-copy"></i>Copy'},1500)})}
+
+function copyAll(){const cards=document.querySelectorAll('.prompt-card');let all='';cards.forEach((c,i)=>{all+=`[PROMPT ${i+1}]\n`;const txt=c.querySelector('.card-txt').textContent;all+=txt+'\n\n'});navigator.clipboard.writeText(all).then(()=>showMsg('All prompts copied!'))}
+
+function clearOutput(){document.getElementById('outputArea').style.display='none';document.getElementById('emptyState').style.display='flex';document.getElementById('promptCards').innerHTML=''}
+
+function showMsg(text,type=''){const msg=document.createElement('div');msg.className='msg '+type;msg.textContent=text;document.body.appendChild(msg);setTimeout(()=>msg.remove(),3000)}
+
+init();
+</script>
+</body>
+</html>
