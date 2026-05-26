@@ -1,12 +1,21 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const app = express();
 
 app.use(express.json());
 app.use(cors());
+
+// Serve static files
 app.use(express.static(path.join(__dirname)));
 
+// Serve HTML file at root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'netraleela_prompt_studio.html'));
+});
+
+// API endpoint
 app.post('/api/generate', async (req, res) => {
   try {
     const { apiKey, systemPrompt, messages } = req.body;
