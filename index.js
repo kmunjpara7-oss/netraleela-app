@@ -1,18 +1,20 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 
-// Serve static files
-app.use(express.static(path.join(__dirname)));
+// Read HTML file
+const htmlPath = path.join(__dirname, 'netraleela_prompt_studio.html');
+const htmlContent = fs.readFileSync(htmlPath, 'utf8');
 
-// Serve HTML file at root
+// Serve HTML at root
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'netraleela_prompt_studio.html'));
+  res.setHeader('content-type', 'text/html');
+  res.send(htmlContent);
 });
 
 // API endpoint
@@ -44,4 +46,4 @@ app.post('/api/generate', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server on port ${PORT}`));
